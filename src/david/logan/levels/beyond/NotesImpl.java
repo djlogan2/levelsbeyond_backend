@@ -8,15 +8,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.glassfish.jersey.server.ResourceConfig;
 
-@Path("fuck")
-public class NotesImpl extends ResourceConfig {
+@Path("api/notes")
+public class NotesImpl {
 	
-	public NotesImpl() {
-		packages("david.logan.levels.beyond");
-	}
-
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
