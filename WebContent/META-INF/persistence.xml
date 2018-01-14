@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+   <persistence-unit name="h2" transaction-type="RESOURCE_LOCAL">
+      <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+      <class>david.logan.levels.beyond.Note</class>
+      <properties>
+		<property name="javax.persistence.jdbc.url" value="jdbc:mysql://192.168.1.69:3306/levelsbeyond" />
+		<property name="javax.persistence.jdbc.user" value="david" />
+		<property name="javax.persistence.jdbc.password" value="ca014dedjl" />
+		<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
+		<property name="hibernate.show_sql" value="true" />
+		<!-- <property name="hibernate.hbm2ddl.auto" value="create-drop" /> -->
+		<property name="hibernate.show_sql" value="true"/>
+		<property name="hibernate.format_sql" value="true"/>
+      </properties>
+   </persistence-unit>
+</persistence>

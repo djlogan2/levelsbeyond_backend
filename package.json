@@ -1,0 +1,33 @@
+{
+  "name": "levelsbeyondnodetest",
+  "version": "1.0.0",
+  "description": "REST server test program for Levels Beyond",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djlogan2/levelsbeyond_backend.git"
+  },
+  "keywords": [
+    "levelsbeyond",
+    "node",
+    "rest"
+  ],
+  "author": "David Logan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/djlogan2/levelsbeyond_backend/issues"
+  },
+  "homepage": "https://github.com/djlogan2/levelsbeyond_backend#readme",
+  "devDependencies": {
+    "mocha": "^4.0.1",
+    "node-rest-client": "^3.1.0",
+    "nodemon": "^1.14.1"
+  },
+  "dependencies": {
+    "random-words": "0.0.1"
+  }
+}

@@ -1,21 +1,30 @@
 package david.logan.levels.beyond;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 @ApplicationPath("")
 public class Main extends Application {
+	@SuppressWarnings("unused")
+	private static final Logger logger = LogManager.getLogger(Main.class);
 	public static class JerseyApp extends ResourceConfig {
 		public JerseyApp() {
 			register(NotesImpl.class);
+	        register(JsonMappingExceptionMapper.class);
+	        register(UnrecognizedPropertyExceptionMapper.class);
 		}
+	
 	};
 	
     public static void main(String[] args) throws Exception {
