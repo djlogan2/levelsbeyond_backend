@@ -38,50 +38,59 @@ public class LBDao {
 	
 	public Note getNote(int id)
 	{
+		EntityManager entityManager = emf.createEntityManager();
+//		entityManager.getTransaction().begin();
+		Note retNote;
 		try
 		{
-			EntityManager entityManager = emf.createEntityManager();
-			entityManager.getTransaction().begin();
-			Note retNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
+			retNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
 					.setParameter("id", id)
 					.getSingleResult();
-			entityManager.close();
-			return retNote;
 		} catch(NoResultException e)
 		{
-			return null;
+			retNote = null;
+		} finally {
+//			entityManager.getTransaction().commit();
+			entityManager.close();
 		}
+		return retNote;
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Note> getAllNotes()
 	{
+		EntityManager entityManager = emf.createEntityManager();
+//		entityManager.getTransaction().begin();
+		List<Note> allNotes;
 		try {
-			EntityManager entityManager = emf.createEntityManager();
-			entityManager.getTransaction().begin();
-			List<Note> allNotes = entityManager.createQuery("SELECT n FROM Note n")
+			allNotes = entityManager.createQuery("SELECT n FROM Note n")
 					.getResultList();
-			entityManager.close();
-			return allNotes;
 		} catch(NoResultException e) {
-			return new ArrayList<Note>();
+			allNotes = new ArrayList<Note>();
+		} finally {
+//			entityManager.getTransaction().commit();
+			entityManager.close();
 		}
+		return allNotes;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Note> getAllNotes(String searchParm)
 	{
+		List<Note> allNotes = null;
+		EntityManager entityManager = emf.createEntityManager();
+//		entityManager.getTransaction().begin();
 		try {
-			EntityManager entityManager = emf.createEntityManager();
-			entityManager.getTransaction().begin();
-			List<Note> allNotes = entityManager.createQuery("SELECT n FROM Note n WHERE n.body like :word")
+			allNotes = entityManager.createQuery("SELECT n FROM Note n WHERE n.body like :word")
 					.setParameter("word",  "%" + searchParm + "%")
 					.getResultList();
-			entityManager.close();
-			return allNotes;
 		} catch(NoResultException e) {
-			return new ArrayList<Note>();
+			allNotes = new ArrayList<Note>();
+		} finally {
+//			entityManager.getTransaction().commit();
+			entityManager.close();
 		}
+		return allNotes;
 	}
 	
 	public int addNote(Note n)
@@ -95,37 +104,61 @@ public class LBDao {
 		return newNote.id;
 	}
 	
-	public void updateNote(Note n)
+	public boolean updateNote(Note n)
 	{
+		boolean ok = false;
+
 		EntityManager entityManager = emf.createEntityManager();
 		entityManager.getTransaction().begin();
-		Note updNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
-				.setParameter("id", n.id)
-				.getSingleResult();
-		updNote.body = n.body;
-		entityManager.merge(updNote);
-		entityManager.getTransaction().commit();
-		entityManager.close();
+
+		try {
+			Note updNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
+					.setParameter("id", n.id)
+					.getSingleResult();
+			updNote.body = n.body;
+			entityManager.merge(updNote);
+			entityManager.getTransaction().commit();
+			ok = true;
+		} catch(NoResultException e) {
+			entityManager.getTransaction().rollback();
+			ok = false;
+		} finally {
+			entityManager.close();
+		}
+		
+		return ok;
 	}
 	
-	public void deleteNote(int id)
+	public boolean deleteNote(int id)
 	{
+		boolean ok = false;
+		
 		EntityManager entityManager = emf.createEntityManager();
 		entityManager.getTransaction().begin();
-		Note delNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
-				.setParameter("id", id)
-				.getSingleResult();
-		entityManager.remove(delNote);
-		entityManager.getTransaction().commit();
-		entityManager.close();
+		
+		try { // NoResultException
+			Note delNote = (Note)entityManager.createQuery("SELECT n FROM Note n where n.id = :id")
+					.setParameter("id", id)
+					.getSingleResult();
+			entityManager.remove(delNote);
+			entityManager.getTransaction().commit();
+			ok = true;
+		} catch(NoResultException e) {
+			entityManager.getTransaction().rollback();
+			ok = false;
+		} finally {
+			entityManager.close();
+		}
+		return ok;
 	}
 	
-	public void deleteAllNotes()
+	public boolean deleteAllNotes()
 	{
 		EntityManager entityManager = emf.createEntityManager();
 		entityManager.getTransaction().begin();
 		entityManager.createQuery("DELETE FROM Note").executeUpdate();
 		entityManager.getTransaction().commit();
 		entityManager.close();
+		return true;
 	}
 }

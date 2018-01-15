@@ -164,43 +164,44 @@ describe('Rest server', function () {
                     return Promise.all(promises);
                 }).then(() => getAllNotes())
                 .then(function (data) {
-                    assert.ok(typeof data === 'array', 'Not sure what we got back from api');
-                    assert.equal(data.length === 10, 'We added ten elements but did not get ten elements');
+                    assert.ok(data instanceof Array, 'Not sure what we got back from api');
+                    assert.equal(data.length, 10, 'We added ten elements but did not get ten elements');
                     data.forEach(function (note) {
-                        assert.ok(!('id' in data), 'response should not have an id field');
-                        assert.ok(!('body' in data), 'response should not have a body field');
-                        assert.ok('error' in data, 'response should have an error field');
+                        assert.ok('id' in note, 'response should have an id field');
+                        assert.ok('body' in note, 'response should have a body field');
+                        assert.ok(!('error' in note), 'response should not have an error field');
                     });
                 });
         });
 
-        it.only('should only return certain notes with optional search parameter', function () {
-            let promises = [];
-            for (let x = 0; x < 50; x++) {
-                let body = randomwords(10);
-                let rn = Math.floor(10 * Math.random());
-                if (x % 2 === 0) {
-                    body.splice(rn, 0, 'babel & fish');
-                }
-                body = body.join(' ');
-                promises.push(addNote(body));
-            }
-            ;
-            //
-            // Make sure you use some special URI character like an ampersand
-            // in order to ensure everything is being encoded and decoded correctly,
-            // as this is a URI parameter and not a post/put
-            //
-            return Promise.all(promises)
-                .then(() => getAllNotes('babel & fish'))
+        it('should only return certain notes with optional search parameter', function () {
+            return deleteNote('DELETE_ALL_NOTES')
+                .then(function() {
+                    let promises = [];
+                    //
+                    // Make sure you use some special URI character like an ampersand
+                    // in order to ensure everything is being encoded and decoded correctly,
+                    // as this is a URI parameter and not a post/put
+                    //
+                    for (let x = 0; x < 50; x++) {
+                        let body = randomwords(10);
+                        let rn = Math.floor(10 * Math.random());
+                        if (x % 2 === 0) {
+                            body.splice(rn, 0, 'babel & fish');
+                        }
+                        body = body.join(' ');
+                        promises.push(addNote(body));
+                    }
+                    return Promise.all(promises);
+                }).then(() => getAllNotes('babel & fish'))
                 .then(function (data) {
-                    assert.ok(typeof data === 'array', 'Not sure what we got back from api');
-                    assert.equal(data.length === 25, 'We did not get 25 elements');
+                    assert.ok(data instanceof Array, 'Not sure what we got back from api');
+                    assert.equal(data.length, 25, 'We did not get 25 elements');
                     data.forEach(function (note) {
-                        assert.ok('id' in data, 'response should have an id field');
-                        assert.ok('body' in data, 'response should have a body field');
-                        assert.ok(!('error' in data), 'response should not have an error field');
-                        assert.notequal(note.body.indexOf('babel & fish'), -1, 'Somehow we received a note that did not have our keyword');
+                        assert.ok('id' in note, 'response should have an id field');
+                        assert.ok('body' in note, 'response should have a body field');
+                        assert.ok(!('error' in note), 'response should not have an error field');
+                        assert.notEqual(note.body.indexOf('babel & fish'), -1, 'Somehow we received a note that did not have our keyword');
                     });
                 });
         });
@@ -285,10 +286,7 @@ describe('Rest server', function () {
                     assert.ok('error' in data, 'response should have an error field');
                     assert.equal(data.error, 'Nonexistant note', 'Should have no longer found the note');
                     return getAllNotes('zxyyndnpz');
-                }).then(function(data){
-                    assert(typeof data === 'array', 'We do not know what type of data we got back');
-                    assert.equal(data.length, 0, 'Why do we have data? We deleted the record');
-                });
+                }).then((data) => assert.equal(data.length, 0, 'There should no longer be any notes to find'));
         });
 
         it('should fail with an invalid id', function () {
@@ -313,10 +311,7 @@ describe('Rest server', function () {
                     assert.ok('error' in data, 'response should have an error field');
                     assert.equal(data.error, 'ok', 'Delete should have returned OK');
                     return getAllNotes();
-                }).then(function(data){
-                    assert(typeof data === 'array', 'We do not know what type of data we got back');
-                    assert.equal(data.length, 0, 'Why do we have data? We deleted everything.');
-                });
+                }).then((data) => assert.equal(data.length, 0, 'All records should have been deleted'));
         });
     });
 });

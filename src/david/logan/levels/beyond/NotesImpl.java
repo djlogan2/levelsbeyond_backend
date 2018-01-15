@@ -57,8 +57,10 @@ public class NotesImpl {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateNote(Note note) {
-		dao.updateNote(note);
-		return Response.status(Response.Status.OK).entity(note).build();
+		if(dao.updateNote(note))
+			return Response.status(Response.Status.OK).entity(note).build();
+		else
+			return Response.status(Response.Status.BAD_REQUEST).entity(new Error("Nonexistant note")).build();
 	}
 	
 	
@@ -74,8 +76,10 @@ public class NotesImpl {
 	@Path("{id : \\d+}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteNote(@PathParam("id") int id) {
-		dao.deleteNote(id);
-		return Response.status(Response.Status.OK).entity(new Error("ok")).build();
+		if(dao.deleteNote(id))
+			return Response.status(Response.Status.OK).entity(new Error("ok")).build();
+		else
+			return Response.status(Response.Status.BAD_REQUEST).entity(new Error("Nonexistant note")).build();
 	}
 
 }
