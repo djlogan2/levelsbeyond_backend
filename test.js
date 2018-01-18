@@ -4,10 +4,11 @@ const assert = require('assert'),
     Client = require('node-rest-client').Client,
     client = new Client(),
     URL = 'http://localhost:8080/api/notes',
-    randomwords = require('random-words');
+    randomwords = require('random-words'),
+    sequential = require('promise-sequential');
 
 function addNote(body, id, extras) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
 
         let data = {body: body};
         if (id) data.id = id;
@@ -24,7 +25,7 @@ function addNote(body, id, extras) {
 };
 
 function getNote(id) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         client.get(`${URL}/${id}`, {
             headers: {"Content-Type": "application/json"}
         }, function (data) {
@@ -34,7 +35,7 @@ function getNote(id) {
 };
 
 function getAllNotes(search) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
 
         if (search) search = `?search=${encodeURIComponent(search)}`
         else search = '';
@@ -48,7 +49,7 @@ function getAllNotes(search) {
 };
 
 function updateNote(note) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         client.put(URL, {
             data: note,
             headers: {"Content-Type": "application/json"}
@@ -61,7 +62,7 @@ function updateNote(note) {
 function deleteNote(id) {
     if (id) id = `/${id}`; else id = '';
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         client.delete(`${URL}${id}`, {
             headers: {"Content-Type": "application/json"}
         }, function (data) {
@@ -71,6 +72,7 @@ function deleteNote(id) {
 };
 
 describe('Rest server', function () {
+    this.timeout(10000);
 
     describe('Adding a new note', function () {
 
@@ -159,9 +161,9 @@ describe('Rest server', function () {
                 .then(function (data) {
                     let promises = [];
                     for (let x = 0; x < 10; x++) {
-                        promises.push(addNote(`test all notes #${x}`));
+                        promises.push(() => addNote(`test all notes #${x}`));
                     }
-                    return Promise.all(promises);
+                    return sequential(promises);
                 }).then(() => getAllNotes())
                 .then(function (data) {
                     assert.ok(data instanceof Array, 'Not sure what we got back from api');
@@ -190,9 +192,15 @@ describe('Rest server', function () {
                             body.splice(rn, 0, 'babel & fish');
                         }
                         body = body.join(' ');
-                        promises.push(addNote(body));
+                        promises.push(() => addNote(body));
                     }
-                    return Promise.all(promises);
+                    //
+                    // return Promise.all(promises); <- Can't use this in development because we don't have a connection pool that can handle it
+                    //
+                    return sequential(promises); //  <- Instead we have to add each record sequentially to ensure we only use one connection at a time
+                    //
+                    // So I went ahead and switched all of the Promise.all calls over to sequential just for safety purposes.
+                    //
                 }).then(() => getAllNotes('babel & fish'))
                 .then(function (data) {
                     assert.ok(data instanceof Array, 'Not sure what we got back from api');
@@ -302,8 +310,8 @@ describe('Rest server', function () {
         it('should delete all notes if id=DELETE_ALL_NOTES', function () {
             let promises = [];
             for(let x = 0 ; x < 10 ; x++)
-                promises.push(addNote(`delete everything ${x}`))
-            return Promise.all(promises)
+                promises.push(() => addNote(`delete everything ${x}`))
+            return sequential(promises)
                 .then(() => deleteNote('DELETE_ALL_NOTES'))
                 .then(function(data){
                     assert.ok(!('id' in data), 'response should not have an id field');

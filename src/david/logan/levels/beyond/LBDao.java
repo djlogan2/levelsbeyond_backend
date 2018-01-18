@@ -26,7 +26,7 @@ import javax.persistence.PersistenceContext;
 public class LBDao {
 	@PersistenceContext
 
-	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("h2");
+	private static EntityManagerFactory emf = Persistence.createEntityManagerFactory("h2");
 	
 	private static LBDao dao = null;
 	public static LBDao getDAO() {
