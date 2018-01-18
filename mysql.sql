@@ -10,3 +10,6 @@ create table notes (
 #   fulltext(body),
    primary key(id)
 ) ENGINE=InnoDB;
+
+grant all on levelsbeyond.* to user user identified by 'password';
+
